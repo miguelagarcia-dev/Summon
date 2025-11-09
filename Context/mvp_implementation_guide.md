@@ -4,16 +4,44 @@
 Desktop companion that lives transparently on screen, watches activity via screen capture + OCR, and talks naturally.
 
 ## 🛠️ Tech Stack
-- **Swift + AppKit** - Window management
-- **Metal + MetalKit** - GPU rendering  
-- **ScreenCaptureKit** - Screen watching
-- **Vision Framework** - Text extraction
-- **ElevenLabs API** - Voice synthesis
-- **Claude API** - Conversational AI
+- **Swift + AppKit** - Window management ✅
+- **Metal + MetalKit** - GPU rendering ✅  
+- **ScreenCaptureKit** - Screen watching ❌ (skipped)
+- **Vision Framework** - Text extraction ❌ (skipped)
+- **ElevenLabs API** - Voice synthesis ✅
+- **Claude API** - Conversational AI ✅
+- **Speech Framework** - Voice input ✅ (bonus!)
+
+## 📊 Quick Status Table
+
+| Component | Status | Completion |
+|-----------|--------|------------|
+| 🎨 **Rendering** (Week 1) | ✅ Complete | 100% |
+| 📺 **Screen Monitoring** (Week 2) | ❌ Skipped | 0% |
+| 🎤 **Voice & Audio** (Week 3) | ✅ Complete | 100% |
+| 🧠 **AI Brain** (Week 4) | 🟡 Mostly Done | 80% |
+| **Overall Voice Companion** | 🟢 Working | **70%** |
 
 ---
 
 ## 📋 Current Status (Updated: Nov 9, 2025)
+
+### 🎉 Summary
+**You have a working voice companion!** The project pivoted from a passive screen-watching assistant to an **interactive voice companion**. You can talk to it, it thinks with Claude AI, and responds with natural speech via ElevenLabs.
+
+**What Works:**
+- 🎨 3D avatar with PBR rendering & visual glow
+- 🎤 Speech recognition (you talk to it)
+- 🧠 Claude AI conversation with personality
+- 🗣️ Natural voice responses (ElevenLabs)
+- 🔄 Full conversation loop
+
+**What's Missing:**
+- 📺 Screen capture & OCR (Week 2 skipped entirely)
+- 🤖 Proactive behavior (it only responds when you talk)
+- 🎭 Rich animations (only basic glow effect)
+
+---
 
 ### ✅ Week 1 Complete (25%)
 - Transparent overlay window (bottom-right, 300x400px)
@@ -31,12 +59,63 @@ Desktop companion that lives transparently on screen, watches activity via scree
 - `Summon/Rendering/ModelRenderer.swift` ✅
 - `Summon/Rendering/Shaders.metal` ✅
 
-### ⚠️ Deviations
-- **3D model instead of 2D sprites** - More advanced than planned
-- **No liquid background shader** - Could add later
-- **Static model** - No animation yet
+### ❌ Week 2 Not Started (0%)
+**Vision/Context system skipped** - Project pivoted to voice-only interaction
 
-### ❌ Weeks 2-4 Not Started (75% remaining)
+### ✅ Week 3 Complete (25%)
+**Voice synthesis & audio working!**
+
+**Files:**
+- `Summon/Speech/ElevenLabsManager.swift` ✅
+  - API integration with voice settings
+  - Audio caching (20 entry limit)
+  - Error handling & retry logic
+- `Summon/Speech/AudioPlayer.swift` ✅
+  - AVAudioPlayer queue system
+  - Playback callbacks
+  - macOS audio handling
+- `Summon/Speech/SpeechRecognizer.swift` ✅ **BONUS!**
+  - Real-time speech-to-text
+  - Silence detection (1.5s threshold)
+  - Permission handling
+
+### ✅ Week 4 Mostly Complete (20%)
+**AI brain working!**
+
+**Files:**
+- `Summon/AI/ClaudeAPIManager.swift` ✅
+  - Anthropic API integration
+  - Claude 3 Haiku model
+  - Retry logic with exponential backoff
+- `Summon/AI/ConversationEngine.swift` ✅
+  - Conversation history (10 message pairs)
+  - Custom system prompt (deadpan humor)
+  - Voice-only output enforcement
+- `Summon/Coordinator/VoiceCompanionCoordinator.swift` ✅
+  - State machine (idle/listening/thinking/speaking)
+  - Full conversation loop
+  - Visual feedback via renderer
+- `Summon/Config.swift` ✅
+  - API key configuration
+
+**Missing:**
+- ❌ `ActivityMonitor.swift` - No screen watching/trigger detection
+- ❌ Screen capture integration
+
+### ⚠️ Major Deviations from Plan
+- **🎤 Voice-driven instead of context-aware** - User talks TO the companion
+- **No screen monitoring** - Week 2 (Vision/OCR) completely skipped
+- **Interactive conversation** - Not proactive commentary on activity
+- **Real working prototype** - Conversation loop fully functional
+
+### ✨ Extras (Not in Original Plan)
+- **Speech Recognition** - `SpeechRecognizer.swift` with silence detection
+- **Audio Caching** - Smart caching in `ElevenLabsManager` to reduce API calls
+- **Visual State Feedback** - `isSpeaking` glow effect synced with audio
+- **Retry Logic** - Robust error handling in API managers
+- **Config System** - Centralized API key management
+- **State Machine** - Clean state transitions (idle/listening/thinking/speaking)
+- **Conversation Personality** - Deadpan humor system prompt
 
 ---
 
@@ -190,37 +269,61 @@ window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliar
 
 ## ✅ Quick Checklist
 
-**Week 1** (Done)
+**Week 1 - Rendering** ✅ (100%)
 - [x] Transparent window
 - [x] 3D model rendering
 - [x] PBR textures & lighting
 - [ ] Animation (static currently)
 
-**Week 2** (TODO)
+**Week 2 - Screen Monitoring** ❌ (0% - SKIPPED)
 - [ ] Screen capture
 - [ ] OCR text extraction
 - [ ] Window/app detection
 - [ ] Context aggregation
 
-**Week 3** (TODO)
-- [ ] Voice synthesis
-- [ ] Audio playback
-- [ ] Animation states
+**Week 3 - Voice & Audio** ✅ (100%)
+- [x] Voice synthesis (ElevenLabs)
+- [x] Audio playback with queue
+- [x] **BONUS:** Speech recognition input
+- [ ] Animation states (basic glow implemented)
 - [ ] Lip-sync
 
-**Week 4** (TODO)
-- [ ] Claude API
-- [ ] Trigger system
-- [ ] Conversation memory
-- [ ] Main coordinator
+**Week 4 - AI Brain** 🟡 (80%)
+- [x] Claude API integration
+- [x] Conversation engine with history
+- [x] Main coordinator (voice-based)
+- [ ] Trigger system (screen activity)
+- [ ] Proactive commentary
 
 ---
 
 ## 🚀 Next Steps
 
-1. Create `Vision/` directory
-2. Implement `ScreenCaptureManager.swift` (see code above)
-3. Test with console logging before building full pipeline
-4. Get screen recording permission in System Settings
+### 🎯 Current Plan: Add Vision System (Screen Monitoring)
 
-**Progress: 25% → Target: 100%**
+**See detailed implementation plan:** [`vision_implementation_plan.md`](vision_implementation_plan.md)
+
+Transform your companion from **reactive** (you talk, it responds) to **proactive** (it watches and comments).
+
+**Quick Overview:**
+1. **Phase 1:** ScreenCaptureManager (2 FPS capture)
+2. **Phase 2:** OCRProcessor (text extraction)
+3. **Phase 3:** WindowContextManager (app tracking)
+4. **Phase 4:** ContextAggregator (combine data)
+5. **Phase 5:** ActivityMonitor (trigger detection)
+6. **Phase 6:** Integration (enhance coordinator)
+7. **Phase 7:** Polish & tune
+
+**Estimated time:** 3-4 days  
+**Result:** Context-aware companion that makes timely observations
+
+---
+
+### Alternative: Polish Voice Companion First
+1. ✅ Voice conversation loop working
+2. Add visual animation states (breathing, speaking indicators)
+3. Polish conversation personality
+4. Add conversation starters / idle chatter
+
+**Current Progress: 70% (Voice Companion MVP) → Target: 100%**  
+**With Vision: 45% → Target: 100% (full original vision)**

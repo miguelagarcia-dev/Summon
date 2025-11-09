@@ -5,8 +5,12 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSScreenCaptureDescription</key>
-	<string>To see what you're working on</string>
+	<string>Summon needs screen access to understand what you're working on and provide timely assistance.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Summon needs accessibility access to know which app you're using.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>To listen to your voice</string>
+	<string>Summon needs microphone access to hear your voice and have conversations</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Summon uses speech recognition to understand what you say</string>
 </dict>
 </plist>

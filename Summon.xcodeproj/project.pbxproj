@@ -288,8 +288,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To listen to your voice";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Summon needs microphone access to hear your voice and have conversations";
 				INFOPLIST_KEY_NSScreenCaptureDescription = "To see what you're working on";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Summon uses speech recognition to understand what you say";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -323,8 +324,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To listen to your voice";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Summon needs microphone access to hear your voice and have conversations";
 				INFOPLIST_KEY_NSScreenCaptureDescription = "To see what you're working on";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Summon uses speech recognition to understand what you say";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

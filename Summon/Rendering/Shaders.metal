@@ -17,6 +17,7 @@ struct VertexOut {
     float3 worldPosition;
     float3 normal;
     float2 texCoord;
+    float emissionIntensity;
 };
 
 struct Uniforms {
@@ -25,7 +26,8 @@ struct Uniforms {
     float4x4 projectionMatrix;
     float4x4 normalMatrix;
     float time;
-    float3 _padding;
+    float emissionIntensity;
+    float2 _padding;
 };
 
 vertex VertexOut vertex_main(VertexIn in [[stage_in]],
@@ -44,6 +46,7 @@ vertex VertexOut vertex_main(VertexIn in [[stage_in]],
     );
     out.normal = normalize(normalMatrix3x3 * in.normal);
     out.texCoord = in.texCoord;
+    out.emissionIntensity = uniforms.emissionIntensity;
     
     return out;
 }
@@ -131,8 +134,11 @@ fragment float4 fragment_main(VertexOut in [[stage_in]],
     float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.0);
     specular += fresnel * metallic * 0.5;
     
-    // MASSIVELY boost emission (the green glow)
-    emission *= 8.0;
+    // MASSIVELY boost emission (the green glow) - modulated by emissionIntensity
+    // Add a base glow color that's always visible when intensity > 1.0
+    float extraGlow = max(in.emissionIntensity - 1.0, 0.0); // 0.0 when idle, 0.5-2.0 when speaking
+    float3 baseGlowColor = float3(0.0, 0.8, 1.0); // Cyan/electric blue glow
+    emission = (emission * 8.0 * in.emissionIntensity) + (baseGlowColor * extraGlow * 2.0);
     
     // Combine all lighting
     finalColor = ambient + diffuse + specular + emission;

@@ -10,6 +10,10 @@ import MetalKit
 
 class OverlayWindowController: NSWindowController {
     
+    var renderer: ModelRenderer? {
+        return (window?.contentView as? MetalView)?.renderer
+    }
+    
     convenience init() {
         // Window size to fit the model
         let windowWidth: CGFloat = 300

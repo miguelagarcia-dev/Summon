@@ -16,7 +16,8 @@ struct Uniforms {
     var projectionMatrix: float4x4
     var normalMatrix: float4x4  // For correct normal transformation
     var time: Float
-    var _padding: SIMD3<Float> = SIMD3<Float>(0, 0, 0) // Padding to align to 16 bytes
+    var emissionIntensity: Float  // Controls glow brightness (0.0 = normal, 1.0+ = brighter)
+    var _padding: SIMD2<Float> = SIMD2<Float>(0, 0) // Padding to align to 16 bytes
 }
 
 class ModelRenderer: NSObject, MTKViewDelegate {
@@ -45,6 +46,14 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     var time: Float = 0.0
     weak var view: MTKView?
     
+    // Emission glow control
+    var isSpeaking: Bool = false {
+        didSet {
+            print("✨ ModelRenderer.isSpeaking changed: \(oldValue) -> \(isSpeaking), glowIntensity: \(glowIntensity)")
+        }
+    }
+    private var glowIntensity: Float = 1.0
+    
     // Test quad for debug rendering
     var testQuadVertexBuffer: MTLBuffer?
     var testQuadIndexBuffer: MTLBuffer?
@@ -52,6 +61,60 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     // Model bounding box and scaling
     var modelBoundingBoxMin: SIMD3<Float> = SIMD3<Float>(Float.infinity, Float.infinity, Float.infinity)
     var modelBoundingBoxMax: SIMD3<Float> = SIMD3<Float>(-Float.infinity, -Float.infinity, -Float.infinity)
+    
+    // 🎭 Animation inspection function
+    func inspectAnimations(asset: MDLAsset) {
+        print("📋 Total objects in asset: \(asset.count)")
+        
+        // Check asset-level animations
+        let animationCount = asset.animations.count
+        if animationCount > 0 {
+            print("✅ Found \(animationCount) animation objects at asset level")
+            // Note: MDLObjectContainerComponent doesn't provide direct iteration
+            // We'll check for animations in the object hierarchy instead
+        } else {
+            print("ℹ️  No asset-level animation container objects found")
+        }
+        
+        // Traverse all objects recursively
+        var objectQueue: [(MDLObject, Int)] = [(asset.object(at: 0), 0)]
+        var objectIndex = 0
+        
+        while !objectQueue.isEmpty {
+            let (obj, level) = objectQueue.removeFirst()
+            let indent = String(repeating: "  ", count: level)
+            
+            print("\(indent)📦 Object \(objectIndex): \(type(of: obj))")
+            print("\(indent)   Name: \(obj.name)")
+            
+            // Check for skeletal structure
+            if let mesh = obj as? MDLMesh {
+                print("\(indent)   ✅ Is MDLMesh with \(mesh.vertexCount) vertices")
+                
+                // Check for morph targets (blend shapes)
+                // Note: MDLMesh doesn't expose morph targets directly in older APIs
+            }
+            
+            // Check for transform animations
+            if let transform = obj.transform {
+                print("\(indent)   Transform found")
+                // Check if transform has keyframes
+            }
+            
+            // Check children
+            let children = obj.children.objects
+            if !children.isEmpty {
+                print("\(indent)   Children: \(children.count)")
+                for child in children {
+                    objectQueue.append((child, level + 1))
+                }
+            }
+            
+            objectIndex += 1
+        }
+        
+        print("🔍 Animation inspection complete\n")
+    }
     var modelScale: Float = 1.0
     var modelCenter: SIMD3<Float> = SIMD3<Float>(0, 0, 0)
     var depthStencilState: MTLDepthStencilState?
@@ -274,6 +337,10 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         
         print("✅ Asset loaded with \(asset.count) objects")
         NSLog("✅ Asset loaded with %d objects", asset.count)
+        
+        // 🔍 INSPECT ANIMATIONS IN THE MODEL
+        print("\n🎭 Inspecting USDZ for animations and poses...")
+        inspectAnimations(asset: asset)
         
         // Get the first object and check if it's a mesh or contains meshes
         let rootObject = asset.object(at: 0)
@@ -653,6 +720,19 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         // Update time for rotation
         time += 0.016 // ~60 FPS
         
+        // Update glow intensity - pulse when speaking
+        if isSpeaking {
+            // Pulse between 1.5 and 3.0 while speaking
+            let newIntensity = 2.25 + sin(time * 6.0) * 0.75
+            if abs(glowIntensity - newIntensity) > 0.5 {
+                print("🔥 Speaking - pulsing glow: \(newIntensity)")
+            }
+            glowIntensity = newIntensity
+        } else {
+            // Smoothly fade back to normal (1.0)
+            glowIntensity = glowIntensity * 0.95 + 1.0 * 0.05
+        }
+        
         // Fix aspect ratio calculation - handle zero/negative bounds
         let viewWidth = max(view.bounds.width, 1.0)
         let viewHeight = max(view.bounds.height, 1.0)
@@ -702,7 +782,8 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             viewMatrix: viewMatrix,
             projectionMatrix: projectionMatrix,
             normalMatrix: normalMatrix,
-            time: time
+            time: time,
+            emissionIntensity: glowIntensity
         )
         uniformsBuffer?.contents().copyMemory(from: &uniforms, byteCount: MemoryLayout<Uniforms>.size)
         
@@ -731,16 +812,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             renderEncoder.setVertexBuffer(uniformsBuffer, offset: 0, index: 10)
         }
         
-        // Add this debug logging RIGHT BEFORE texture binding
-        print("🎨 Texture status:")
-        print("   Base color: \(baseColorTexture != nil ? "✅ LOADED" : "❌ using default white")")
-        print("   Emission: \(emissionTexture != nil ? "✅ LOADED" : "❌ using default black")")
-        print("   Metallic: \(metallicTexture != nil ? "✅ LOADED" : "❌ using default black")")
-        print("   Roughness: \(roughnessTexture != nil ? "✅ LOADED" : "❌ using default white")")
-        print("   Normal: \(normalTexture != nil ? "✅ LOADED" : "❌ using default normal")")
-        print("   Occlusion: \(occlusionTexture != nil ? "✅ LOADED" : "❌ using default white")")
-        
-        // Bind ALL textures with proper fallbacks (existing code below)
+        // Bind ALL textures with proper fallbacks
         renderEncoder.setFragmentTexture(baseColorTexture ?? defaultWhiteTexture, index: 0)
         renderEncoder.setFragmentTexture(emissionTexture ?? defaultBlackTexture, index: 1)
         renderEncoder.setFragmentTexture(metallicTexture ?? defaultBlackTexture, index: 2)
@@ -805,7 +877,8 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             viewMatrix: viewMatrix,
             projectionMatrix: projectionMatrix,
             normalMatrix: normalMatrix,
-            time: time
+            time: time,
+            emissionIntensity: glowIntensity
         )
         uniformsBuffer?.contents().copyMemory(from: &uniforms, byteCount: MemoryLayout<Uniforms>.size)
         
