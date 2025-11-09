@@ -54,6 +54,8 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     var modelBoundingBoxMax: SIMD3<Float> = SIMD3<Float>(-Float.infinity, -Float.infinity, -Float.infinity)
     var modelScale: Float = 1.0
     var modelCenter: SIMD3<Float> = SIMD3<Float>(0, 0, 0)
+    var depthStencilState: MTLDepthStencilState?
+
     
     init(device: MTLDevice, view: MTKView) {
         self.device = device
@@ -222,6 +224,15 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         pipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = .sourceAlpha
         pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = .oneMinusSourceAlpha
         pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = .oneMinusSourceAlpha
+        // Configure depth buffer
+        pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
+
+        // Create depth stencil state
+        let depthStencilDescriptor = MTLDepthStencilDescriptor()
+        depthStencilDescriptor.depthCompareFunction = .less
+        depthStencilDescriptor.isDepthWriteEnabled = true
+        depthStencilState = device.makeDepthStencilState(descriptor: depthStencilDescriptor)
+
         
         do {
             renderPipelineState = try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
@@ -460,8 +471,8 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     }
     
     func loadTexture(from mesh: MDLMesh) {
-        print("🎨 Attempting to load texture from mesh...")
-        NSLog("🎨 Attempting to load texture from mesh...")
+        print("🎨 Attempting to load textures from mesh...")
+        NSLog("🎨 Attempting to load textures from mesh...")
         
         // Check if mesh has submeshes with materials
         guard let submeshes = mesh.submeshes as? [MDLSubmesh],
@@ -475,116 +486,11 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         print("✅ Found material: \(material.name)")
         NSLog("✅ Found material: %@", material.name)
         
-        // Check if this is a GLTF model (has external texture files)
-        let isGLTF = modelURL?.pathExtension.lowercased() == "gltf" || modelURL?.pathExtension.lowercased() == "glb"
-        print("   Model type: \(isGLTF ? "GLTF" : "USDZ")")
-        NSLog("   Model type: %@", isGLTF ? "GLTF" : "USDZ")
-        
-        // Try to get base color texture - textures are embedded in USDZ
-        if let baseColorProperty = material.property(with: .baseColor) {
-            print("   Material has baseColor property, type: \(baseColorProperty.type)")
-            NSLog("   Material has baseColor property, type: %ld", baseColorProperty.type.rawValue)
-            
-            // Check all possible ways to extract texture
-            var mdlTexture: MDLTexture? = nil
-            
-            // Method 1: textureSamplerValue (most common for embedded textures)
-            if let textureSampler = baseColorProperty.textureSamplerValue,
-               let texture = textureSampler.texture {
-                mdlTexture = texture
-                print("   Found texture via textureSamplerValue")
-                NSLog("   Found texture via textureSamplerValue")
-            }
-            
-            // Method 2: URL or string value references texture
-            if mdlTexture == nil {
-                // Try URL value first (GLTF uses this)
-                if let urlValue = baseColorProperty.urlValue {
-                    print("   Found texture URL: \(urlValue.path)")
-                    NSLog("   Found texture URL: %@", urlValue.path)
-                    
-                    if isGLTF {
-                        // GLTF: Load directly from file URL
-                        let textureLoader = MTKTextureLoader(device: device)
-                        let options: [MTKTextureLoader.Option: Any] = [
-                            .textureUsage: MTLTextureUsage.shaderRead.rawValue,
-                            .generateMipmaps: true
-                        ]
-                        
-                        do {
-                            baseColorTexture = try textureLoader.newTexture(URL: urlValue, options: options)
-                            print("✅ GLTF texture loaded successfully!")
-                            NSLog("✅ GLTF texture loaded successfully!")
-                            print("   Texture size: \(baseColorTexture!.width) x \(baseColorTexture!.height)")
-                            NSLog("   Texture size: %lu x %lu", baseColorTexture!.width, baseColorTexture!.height)
-                            print("   Texture pixel format: \(baseColorTexture!.pixelFormat.rawValue)")
-                            NSLog("   Texture pixel format: %lu", baseColorTexture!.pixelFormat.rawValue)
-                            return  // Success
-                        } catch {
-                            print("❌ Failed to load GLTF texture: \(error)")
-                            NSLog("❌ Failed to load GLTF texture: %@", error.localizedDescription)
-                        }
-                    } else {
-                        // USDZ: Extract from ZIP
-                        if let stringValue = baseColorProperty.stringValue,
-                           let bracketStart = stringValue.firstIndex(of: "["),
-                           let bracketEnd = stringValue.firstIndex(of: "]") {
-                            
-                            let texturePathInZip = String(stringValue[stringValue.index(after: bracketStart)..<bracketEnd])
-                            print("   📦 Extracting texture from USDZ: \(texturePathInZip)")
-                            NSLog("   📦 Extracting texture from USDZ: %@", texturePathInZip)
-                            
-                            if let texture = extractTextureFromUSDZ(usdzPath: urlValue, texturePath: texturePathInZip) {
-                                baseColorTexture = texture
-                                print("✅ Texture extracted and loaded from USDZ!")
-                                NSLog("✅ Texture extracted and loaded from USDZ!")
-                                print("   Texture size: \(texture.width) x \(texture.height)")
-                                NSLog("   Texture size: %lu x %lu", texture.width, texture.height)
-                                return  // Success
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // If we found a texture, convert it to MTLTexture
-            if let mdlTexture = mdlTexture {
-                print("   Converting MDLTexture to MTLTexture...")
-                NSLog("   Converting MDLTexture to MTLTexture...")
-                
-                let textureLoader = MTKTextureLoader(device: device)
-                let options: [MTKTextureLoader.Option: Any] = [
-                    .textureUsage: MTLTextureUsage.shaderRead.rawValue,
-                    .generateMipmaps: true
-                ]
-                
-                do {
-                    baseColorTexture = try textureLoader.newTexture(texture: mdlTexture, options: options)
-                    print("✅ Texture loaded successfully from USDZ!")
-                    NSLog("✅ Texture loaded successfully from USDZ!")
-                    print("   Texture size: \(baseColorTexture!.width) x \(baseColorTexture!.height)")
-                    NSLog("   Texture size: %lu x %lu", baseColorTexture!.width, baseColorTexture!.height)
-                    print("   Texture pixel format: \(baseColorTexture!.pixelFormat.rawValue)")
-                    NSLog("   Texture pixel format: %lu", baseColorTexture!.pixelFormat.rawValue)
-                } catch {
-                    print("❌ Failed to load texture from MDLTexture: \(error)")
-                    NSLog("❌ Failed to load texture from MDLTexture: %@", error.localizedDescription)
-                }
-            } else if baseColorProperty.type == .color {
-                // It's a solid color, not a texture
-                let color = baseColorProperty.float3Value
-                print("   Base color is solid: RGB(\(color.x), \(color.y), \(color.z))")
-                NSLog("   Base color is solid: RGB(%f, %f, %f)", color.x, color.y, color.z)
-            } else {
-                print("   ⚠️ Could not extract texture from property type \(baseColorProperty.type.rawValue)")
-                NSLog("   ⚠️ Could not extract texture from property type %ld", baseColorProperty.type.rawValue)
-            }
-        } else {
-            print("⚠️ No baseColor property found in material")
-            NSLog("⚠️ No baseColor property found in material")
+        // Extract ALL PBR textures using the unified extraction method
+        extractMaterialTexture(from: material, semantic: .baseColor, name: "base color") { texture in
+            self.baseColorTexture = texture
         }
         
-        // Extract all PBR textures
         extractMaterialTexture(from: material, semantic: .emission, name: "emission") { texture in
             self.emissionTexture = texture
         }
@@ -603,6 +509,16 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         
         extractMaterialTexture(from: material, semantic: .ambientOcclusion, name: "occlusion") { texture in
             self.occlusionTexture = texture
+        }
+        
+        // Check for solid base color if no texture was loaded
+        if baseColorTexture == nil {
+            if let baseColorProperty = material.property(with: .baseColor),
+               baseColorProperty.type == .color {
+                let color = baseColorProperty.float3Value
+                print("   Base color is solid: RGB(\(color.x), \(color.y), \(color.z))")
+                NSLog("   Base color is solid: RGB(%f, %f, %f)", color.x, color.y, color.z)
+            }
         }
     }
     
@@ -689,7 +605,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             let textureLoader = MTKTextureLoader(device: device)
             let options: [MTKTextureLoader.Option: Any] = [
                 .textureUsage: MTLTextureUsage.shaderRead.rawValue,
-                .generateMipmaps: true
+                .generateMipmaps: false
             ]
             
             let texture = try textureLoader.newTexture(URL: extractedTexturePath, options: options)
@@ -798,6 +714,11 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         renderEncoder.setRenderPipelineState(renderPipelineState)
         renderEncoder.setCullMode(.none)  // Disable backface culling to see all triangles
         
+        // Enable depth testing
+        if let depthStencilState = depthStencilState {
+            renderEncoder.setDepthStencilState(depthStencilState)
+        }
+        
         // Bind ALL vertex buffers from the model (even if shader doesn't use them all)
         // Metal validation requires all buffers referenced in vertex descriptor to be bound
         for (index, buffer) in vertexBuffers.enumerated() {
@@ -810,9 +731,22 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             renderEncoder.setVertexBuffer(uniformsBuffer, offset: 0, index: 10)
         }
         
-        // Bind base color texture with fallback to white
-        let textureToUse = baseColorTexture ?? defaultWhiteTexture
-        renderEncoder.setFragmentTexture(textureToUse, index: 0)
+        // Add this debug logging RIGHT BEFORE texture binding
+        print("🎨 Texture status:")
+        print("   Base color: \(baseColorTexture != nil ? "✅ LOADED" : "❌ using default white")")
+        print("   Emission: \(emissionTexture != nil ? "✅ LOADED" : "❌ using default black")")
+        print("   Metallic: \(metallicTexture != nil ? "✅ LOADED" : "❌ using default black")")
+        print("   Roughness: \(roughnessTexture != nil ? "✅ LOADED" : "❌ using default white")")
+        print("   Normal: \(normalTexture != nil ? "✅ LOADED" : "❌ using default normal")")
+        print("   Occlusion: \(occlusionTexture != nil ? "✅ LOADED" : "❌ using default white")")
+        
+        // Bind ALL textures with proper fallbacks (existing code below)
+        renderEncoder.setFragmentTexture(baseColorTexture ?? defaultWhiteTexture, index: 0)
+        renderEncoder.setFragmentTexture(emissionTexture ?? defaultBlackTexture, index: 1)
+        renderEncoder.setFragmentTexture(metallicTexture ?? defaultBlackTexture, index: 2)
+        renderEncoder.setFragmentTexture(roughnessTexture ?? defaultWhiteTexture, index: 3)
+        renderEncoder.setFragmentTexture(normalTexture ?? defaultNormalTexture, index: 4)
+        renderEncoder.setFragmentTexture(occlusionTexture ?? defaultWhiteTexture, index: 5)
         
         // We already checked indexBuffer exists in the guard above (it's now a local non-optional variable)
         renderEncoder.drawIndexedPrimitives(

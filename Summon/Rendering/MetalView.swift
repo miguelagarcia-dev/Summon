@@ -21,6 +21,8 @@ class MetalView: MTKView {
         // Transparency configuration
         self.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
         self.colorPixelFormat = .bgra8Unorm
+        self.depthStencilPixelFormat = .depth32Float  // ← ADD THIS LINE
+        
         self.layer?.isOpaque = false
         self.framebufferOnly = false
         
@@ -37,4 +39,3 @@ class MetalView: MTKView {
         fatalError("init(coder:) has not been implemented")
     }
 }
-
