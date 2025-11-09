@@ -6,8 +6,21 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		407222B32EBFE1B9007B1630 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 407222B22EBFE1B9007B1630 /* MetalKit.framework */; };
+		407222B52EBFE1D0007B1630 /* ModelIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 407222B42EBFE1D0007B1630 /* ModelIO.framework */; };
+		407222B72EBFE20D007B1630 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 407222B62EBFE20D007B1630 /* AppKit.framework */; };
+		407222BB2EBFE56D007B1630 /* Black_Cat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 407222BA2EBFE56D007B1630 /* Black_Cat.usdz */; };
+		4072239A2EC02ED4007B1630 /* Poddy_M1_-_Stylized_Floating_Robot_-_Posed.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 407223992EC02ED4007B1630 /* Poddy_M1_-_Stylized_Floating_Robot_-_Posed.usdz */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		407222A32EBFDE5F007B1630 /* Summon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Summon.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		407222B22EBFE1B9007B1630 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		407222B42EBFE1D0007B1630 /* ModelIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ModelIO.framework; path = System/Library/Frameworks/ModelIO.framework; sourceTree = SDKROOT; };
+		407222B62EBFE20D007B1630 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		407222BA2EBFE56D007B1630 /* Black_Cat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Black_Cat.usdz; sourceTree = "<group>"; };
+		407223992EC02ED4007B1630 /* Poddy_M1_-_Stylized_Floating_Robot_-_Posed.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poddy_M1_-_Stylized_Floating_Robot_-_Posed.usdz"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +36,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				407222B72EBFE20D007B1630 /* AppKit.framework in Frameworks */,
+				407222B52EBFE1D0007B1630 /* ModelIO.framework in Frameworks */,
+				407222B32EBFE1B9007B1630 /* MetalKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,7 +48,10 @@
 		4072229A2EBFDE5F007B1630 = {
 			isa = PBXGroup;
 			children = (
+				407223992EC02ED4007B1630 /* Poddy_M1_-_Stylized_Floating_Robot_-_Posed.usdz */,
+				407222BA2EBFE56D007B1630 /* Black_Cat.usdz */,
 				407222A52EBFDE5F007B1630 /* Summon */,
+				407222B12EBFE1B9007B1630 /* Frameworks */,
 				407222A42EBFDE5F007B1630 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +62,16 @@
 				407222A32EBFDE5F007B1630 /* Summon.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		407222B12EBFE1B9007B1630 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				407222B62EBFE20D007B1630 /* AppKit.framework */,
+				407222B42EBFE1D0007B1630 /* ModelIO.framework */,
+				407222B22EBFE1B9007B1630 /* MetalKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -109,6 +138,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4072239A2EC02ED4007B1630 /* Poddy_M1_-_Stylized_Floating_Robot_-_Posed.usdz in Resources */,
+				407222BB2EBFE56D007B1630 /* Black_Cat.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,7 +193,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -225,7 +256,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -251,11 +282,14 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_PREVIEWS = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To listen to your voice";
+				INFOPLIST_KEY_NSScreenCaptureDescription = "To see what you're working on";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -268,6 +302,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -278,14 +313,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_PREVIEWS = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "To listen to your voice";
+				INFOPLIST_KEY_NSScreenCaptureDescription = "To see what you're working on";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -298,6 +337,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
