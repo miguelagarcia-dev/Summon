@@ -66,7 +66,7 @@ Required permissions (granted at first launch):
 
 ## The build journey
 
-This thing did not come easy. Here's what 36 hours of debugging looked like.
+I wanted to dive deep into a graphical api during my first hackton. Overall the project did not come easy. But Here's what 36 hours of debugging looked like.
 
 ### 2:32 PM — The model
 
@@ -182,10 +182,8 @@ Tuned the metallic/roughness values. The robot has proper shading now. The face,
 
 ### 2:36 AM — Done.
 
-Full PBR rendering with correct metallic material. Tied the glow intensity to the `isSpeaking` state so the eyes pulse when it talks. Wired up Claude + ElevenLabs. It works.
-
-![Final Poddy render — metallic with green eyes](screenshots/15_robot_final.png)
-
+The final result is an unskinned model rendered in real-time through a custom 3D rendering engine built on Apple Metal. Tied the glow intensity to the isSpeaking state so the eyes pulse when it talks. Wired up Claude + ElevenLabs. It works.
+The finally result is an unskined model which 
 ---
 
 Built at HackPrinceton 2025 by Miguel Garcia.
