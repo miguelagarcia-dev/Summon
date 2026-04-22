@@ -45,7 +45,7 @@ enum ClaudeAPIError: Error {
 class ClaudeAPIManager {
     private let apiKey: String
     private let apiURL = "https://api.anthropic.com/v1/messages"
-    private let model = "claude-3-haiku-20240307"  // Using Claude 3 Haiku - fast and always available
+    private let model = "claude-haiku-4-5-20251001"  // Using Claude Haiku 4.5 - fast and always available
     private let maxRetries = 3
     
     init(apiKey: String) {
