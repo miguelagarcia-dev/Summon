@@ -51,6 +51,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             self?.voiceCompanion?.start()
             print("✨ Summon is ready! Start speaking to interact.")
+            
+            // Enable vision system after voice companion starts
+            Task {
+                // Wait a bit for voice permissions to be granted first
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                await self?.voiceCompanion?.enableVision()
+            }
         }
     }
     
