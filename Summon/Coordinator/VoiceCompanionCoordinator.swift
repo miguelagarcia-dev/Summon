@@ -34,7 +34,7 @@ class VoiceCompanionCoordinator {
     // State management
     private var state: CompanionState = .idle {
         didSet {
-            print("🤖 Companion state changed: \(oldValue) -> \(state)")
+            print("companion state: \(oldValue) -> \(state)")
             // Update visual glow based on speaking state
             renderer?.isSpeaking = (state == .speaking)
         }
@@ -70,7 +70,7 @@ class VoiceCompanionCoordinator {
         speechRecognizer.onTranscriptionComplete = { [weak self] text in
             guard let self = self else { return }
             
-            print("📝 User said: '\(text)'")
+            print("user said: '\(text)'")
             
             // Handle the user's speech in a background task
             Task {
@@ -86,18 +86,18 @@ class VoiceCompanionCoordinator {
             return
         }
         
-        print("🚀 Starting Voice Companion...")
+        print("starting voice companion")
         
         // Request permissions first
         speechRecognizer.requestPermissions { [weak self] granted in
             guard let self = self else { return }
             
             if granted {
-                print("✅ Permissions granted - starting to listen")
+                print("permissions granted, starting to listen")
                 self.isActive = true
                 self.startListening()
             } else {
-                print("❌ Permissions denied - cannot start companion")
+                print("permissions denied, cannot start")
             }
         }
     }
@@ -106,7 +106,7 @@ class VoiceCompanionCoordinator {
     func stop() {
         guard isActive else { return }
         
-        print("🛑 Stopping Voice Companion")
+        print("stopping voice companion")
         isActive = false
         speechRecognizer.stopListening()
         audioPlayer.stop()
@@ -116,21 +116,21 @@ class VoiceCompanionCoordinator {
     // Start listening for user speech
     private func startListening() {
         guard state != .listening else {
-            print("⚠️ Already listening, skipping restart")
+            print("already listening, skipping restart")
             return
         }
-        
+
         guard isActive else {
-            print("⚠️ Companion not active, cannot start listening")
+            print("companion not active, cannot start listening")
             return
         }
-        
+
         do {
             state = .listening
             try speechRecognizer.startListening()
-            print("👂 Listening for your voice...")
+            print("listening")
         } catch {
-            print("❌ Failed to start listening: \(error.localizedDescription)")
+            print("failed to start listening: \(error.localizedDescription)")
             state = .idle
         }
     }
@@ -139,7 +139,7 @@ class VoiceCompanionCoordinator {
     func handleUserSpeech(_ text: String) async {
         // Prevent handling new input while busy
         guard state == .listening else {
-            print("⚠️ Ignoring input - currently \(state)")
+            print("ignoring input, currently \(state)")
             return
         }
         
@@ -149,21 +149,21 @@ class VoiceCompanionCoordinator {
         do {
             // Get AI response
             state = .thinking
-            print("🤔 Thinking...")
+            print("thinking")
             let response = try await conversationEngine.getResponse(userMessage: text)
-            
+
             // Synthesize speech
-            print("🎤 Synthesizing response...")
+            print("synthesizing response")
             let audioData = try await elevenLabsManager.synthesize(text: response)
-            
+
             // Speak the response
             state = .speaking
-            print("🗣️ Speaking: '\(response)'")
+            print("speaking: '\(response)'")
             
             // Play audio with completion handler
             audioPlayer.play(audioData: audioData) { [weak self] in
                 guard let self = self else { return }
-                print("✅ Finished speaking")
+                print("finished speaking")
                 
                 // Resume listening after speaking
                 if self.isActive {
@@ -174,7 +174,7 @@ class VoiceCompanionCoordinator {
             }
             
         } catch {
-            print("❌ Error in conversation flow: \(error.localizedDescription)")
+            print("error in conversation flow: \(error.localizedDescription)")
             state = .idle
             
             // Resume listening on error
@@ -199,11 +199,11 @@ class VoiceCompanionCoordinator {
     /// Enable context-aware vision system
     func enableVision() async {
         guard !isVisionEnabled else {
-            print("⚠️ Vision already enabled")
+            print("vision already enabled")
             return
         }
-        
-        print("🔍 Enabling vision system...")
+
+        print("enabling vision system...")
         
         do {
             // Initialize components
@@ -214,7 +214,7 @@ class VoiceCompanionCoordinator {
             // Request screen recording permission
             guard let manager = screenCaptureManager,
                   try await manager.requestPermission() else {
-                print("❌ Screen recording permission denied")
+                print("screen recording permission denied")
                 return
             }
             
@@ -232,7 +232,7 @@ class VoiceCompanionCoordinator {
             
             // Set up error callback
             manager.onError = { error in
-                print("❌ Screen capture error: \(error.localizedDescription)")
+                print("screen capture error: \(error.localizedDescription)")
             }
             
             // Start capturing
@@ -242,10 +242,10 @@ class VoiceCompanionCoordinator {
             startActivityMonitoring()
             
             isVisionEnabled = true
-            print("✅ Vision system enabled")
-            
+            print("vision system enabled")
+
         } catch {
-            print("❌ Failed to enable vision: \(error.localizedDescription)")
+            print("failed to enable vision: \(error.localizedDescription)")
         }
     }
     
@@ -253,7 +253,7 @@ class VoiceCompanionCoordinator {
     func disableVision() async {
         guard isVisionEnabled else { return }
         
-        print("🛑 Disabling vision system...")
+        print("disabling vision system")
         
         // Stop monitoring
         contextMonitoringTask?.cancel()
@@ -268,7 +268,7 @@ class VoiceCompanionCoordinator {
         activityMonitor = nil
         
         isVisionEnabled = false
-        print("✅ Vision system disabled")
+        print("vision system disabled")
     }
     
     // MARK: - Activity Monitoring
@@ -303,7 +303,7 @@ class VoiceCompanionCoordinator {
             return
         }
         
-        print("🎯 Activity trigger: \(trigger.description)")
+        print("activity trigger: \(trigger.description)")
         
         // Generate proactive comment
         await handleActivityTrigger(trigger)
@@ -331,7 +331,7 @@ class VoiceCompanionCoordinator {
             let audioData = try await elevenLabsManager.synthesize(text: response)
             
             state = .speaking
-            print("🗣️ Proactive comment: '\(response)'")
+            print("proactive comment: '\(response)'")
             
             // Play audio
             audioPlayer.play(audioData: audioData) { [weak self] in
@@ -342,7 +342,7 @@ class VoiceCompanionCoordinator {
             await monitor.markCommentary(trigger: trigger)
             
         } catch {
-            print("❌ Error in proactive commentary: \(error.localizedDescription)")
+            print("error in proactive commentary: \(error.localizedDescription)")
             state = .idle
         }
     }
@@ -396,7 +396,7 @@ class VoiceCompanionCoordinator {
     
     func setMode(_ mode: CompanionMode) {
         self.mode = mode
-        print("⚙️ Companion mode set to: \(mode)")
+        print("companion mode: \(mode)")
     }
     
     // MARK: - User Feedback

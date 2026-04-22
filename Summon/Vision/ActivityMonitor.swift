@@ -97,12 +97,12 @@ class ActivityMonitor {
     // User feedback methods
     func markEngaged() async {
         engagementCount += 1
-        print("📊 Engagement: \(engagementCount) engaged, \(ignoredCount) ignored")
+        print("engagement: \(engagementCount) engaged, \(ignoredCount) ignored")
     }
-    
+
     func markIgnored() async {
         ignoredCount += 1
-        print("📊 Engagement: \(engagementCount) engaged, \(ignoredCount) ignored")
+        print("engagement: \(engagementCount) engaged, \(ignoredCount) ignored")
     }
     
     // Check if app switch is significant

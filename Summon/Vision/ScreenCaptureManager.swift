@@ -42,11 +42,11 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
                 throw ScreenCaptureError.noDisplaysAvailable
             }
             
-            print("✅ Screen recording permission granted")
+            print("screen recording permission granted")
             return true
-            
+
         } catch {
-            print("❌ Screen recording permission error: \(error.localizedDescription)")
+            print("screen recording permission error: \(error.localizedDescription)")
             throw ScreenCaptureError.permissionDenied(underlying: error)
         }
     }
@@ -56,7 +56,7 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
     /// Start capturing screen at 2 FPS (but only process every 5th frame for OCR)
     func startCapture() async throws {
         guard !isCapturing else {
-            print("⚠️ Screen capture already running")
+            print("screen capture already running")
             return
         }
         
@@ -71,7 +71,7 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
             throw ScreenCaptureError.noDisplaysAvailable
         }
         
-        print("📺 Using display: \(display.width)x\(display.height)")
+        print("using display: \(display.width)x\(display.height)")
         
         // Create filter for entire display (excluding nothing)
         filter = SCContentFilter(display: display, excludingWindows: [])
@@ -124,26 +124,26 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
         isCapturing = true
         frameCounter = 0
         
-        print("✅ Screen capture started (2 FPS, processing every 5th frame)")
+        print("screen capture started")
     }
     
     /// Stop capturing with proper cleanup
     func stopCapture() async {
         guard isCapturing else {
-            print("⚠️ Screen capture not running")
+            print("screen capture not running")
             return
         }
-        
+
         do {
             try await stream?.stopCapture()
             stream = nil
             filter = nil
             isCapturing = false
             frameCounter = 0
-            print("🛑 Screen capture stopped")
-            
+            print("screen capture stopped")
+
         } catch {
-            print("❌ Error stopping capture: \(error.localizedDescription)")
+            print("error stopping capture: \(error.localizedDescription)")
             onError?(error)
         }
     }
@@ -166,7 +166,7 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
         
         // Extract image buffer
         guard let imageBuffer = sampleBuffer.imageBuffer else {
-            print("⚠️ No image buffer in sample")
+            print("no image buffer in sample")
             return
         }
         
@@ -178,7 +178,7 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
             ciImage,
             from: ciImage.extent
         ) else {
-            print("⚠️ Failed to create CGImage")
+            print("failed to create CGImage")
             return
         }
         
@@ -191,7 +191,7 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
     // MARK: - SCStreamDelegate
     
     func stream(_ stream: SCStream, didStopWithError error: Error) {
-        print("❌ Stream stopped with error: \(error.localizedDescription)")
+        print("stream stopped with error: \(error.localizedDescription)")
         isCapturing = false
         
         DispatchQueue.main.async { [weak self] in

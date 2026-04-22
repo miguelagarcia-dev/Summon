@@ -34,16 +34,16 @@ class SpeechRecognizer: NSObject {
             DispatchQueue.main.async {
                 switch authStatus {
                 case .authorized:
-                    print("✅ Speech recognition authorized")
+                    print("speech recognition authorized")
                     completion(true)
                 case .denied:
-                    print("❌ Speech recognition denied")
+                    print("speech recognition denied")
                     completion(false)
                 case .restricted:
-                    print("❌ Speech recognition restricted")
+                    print("speech recognition restricted")
                     completion(false)
                 case .notDetermined:
-                    print("⚠️ Speech recognition not determined")
+                    print("speech recognition not determined")
                     completion(false)
                 @unknown default:
                     completion(false)
@@ -89,7 +89,7 @@ class SpeechRecognizer: NSObject {
                 if !transcription.isEmpty {
                     self.hasDetectedSpeech = true
                     self.lastTranscription = transcription
-                    print("🎙️ Heard: \"\(transcription)\"")
+                    print("heard: \"\(transcription)\"")
                     
                     // Reset silence timer on main thread
                     DispatchQueue.main.async {
@@ -105,9 +105,9 @@ class SpeechRecognizer: NSObject {
             
             if error != nil || isFinal {
                 if error != nil {
-                    print("❌ Recognition error: \(error!.localizedDescription)")
+                    print("recognition error: \(error!.localizedDescription)")
                 } else if isFinal {
-                    print("⚠️ Recognition marked as final - session ended")
+                    print("recognition marked as final, session ended")
                 }
                 
                 self.audioEngine.stop()
@@ -128,41 +128,41 @@ class SpeechRecognizer: NSObject {
         audioEngine.prepare()
         try audioEngine.start()
         
-        print("Speech recognition started - listening...")
+        print("speech recognition started")
         hasDetectedSpeech = false
         lastTranscription = ""
     }
-    
+
     // Stop listening
     func stopListening() {
         silenceTimer?.invalidate()
         silenceTimer = nil
-        
+
         audioEngine.stop()
         recognitionRequest?.endAudio()
-        
+
         if let inputNode = audioEngine.inputNode as AVAudioInputNode? {
             inputNode.removeTap(onBus: 0)
         }
-        
+
         recognitionTask?.cancel()
         recognitionTask = nil
         recognitionRequest = nil
-        
-        print("Speech recognition stopped")
+
+        print("speech recognition stopped")
     }
-    
+
     // Handle when silence is detected (user stopped speaking)
     private func handleSilenceDetected() {
-        print("🔇 Silence detected")
-        
+        print("silence detected")
+
         guard hasDetectedSpeech, !lastTranscription.isEmpty else {
-            print("⚠️ No speech to process")
+            print("no speech to process")
             return
         }
-        
+
         let finalTranscription = lastTranscription
-        print("📝 User finished speaking: \"\(finalTranscription)\"")
+        print("user finished speaking: \"\(finalTranscription)\"")
         
         // Reset state
         hasDetectedSpeech = false

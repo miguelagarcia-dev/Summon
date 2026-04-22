@@ -48,7 +48,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     // Emission glow control
     var isSpeaking: Bool = false {
         didSet {
-            print("✨ ModelRenderer.isSpeaking changed: \(oldValue) -> \(isSpeaking), glowIntensity: \(glowIntensity)")
+            print("isSpeaking: \(oldValue) -> \(isSpeaking), glowIntensity: \(glowIntensity)")
         }
     }
     private var glowIntensity: Float = 1.0
@@ -61,18 +61,17 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     var modelBoundingBoxMin: SIMD3<Float> = SIMD3<Float>(Float.infinity, Float.infinity, Float.infinity)
     var modelBoundingBoxMax: SIMD3<Float> = SIMD3<Float>(-Float.infinity, -Float.infinity, -Float.infinity)
 
-    // 🎭 Animation inspection function
     func inspectAnimations(asset: MDLAsset) {
-        print("📋 Total objects in asset: \(asset.count)")
+        print("total objects in asset: \(asset.count)")
 
         // Check asset-level animations
         let animationCount = asset.animations.count
         if animationCount > 0 {
-            print("✅ Found \(animationCount) animation objects at asset level")
+            print("found \(animationCount) animation objects at asset level")
             // Note: MDLObjectContainerComponent doesn't provide direct iteration
             // We'll check for animations in the object hierarchy instead
         } else {
-            print("ℹ️  No asset-level animation container objects found")
+            print("no asset-level animation container objects found")
         }
 
         // Traverse all objects recursively
@@ -83,12 +82,12 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             let (obj, level) = objectQueue.removeFirst()
             let indent = String(repeating: "  ", count: level)
 
-            print("\(indent)📦 Object \(objectIndex): \(type(of: obj))")
-            print("\(indent)   Name: \(obj.name)")
+            print("\(indent)object \(objectIndex): \(type(of: obj))")
+            print("\(indent)   name: \(obj.name)")
 
             // Check for skeletal structure
             if let mesh = obj as? MDLMesh {
-                print("\(indent)   ✅ Is MDLMesh with \(mesh.vertexCount) vertices")
+                print("\(indent)   MDLMesh with \(mesh.vertexCount) vertices")
 
                 // Check for morph targets (blend shapes)
                 // Note: MDLMesh doesn't expose morph targets directly in older APIs
@@ -96,14 +95,14 @@ class ModelRenderer: NSObject, MTKViewDelegate {
 
             // Check for transform animations
             if let transform = obj.transform {
-                print("\(indent)   Transform found")
+                print("\(indent)   transform found")
                 // Check if transform has keyframes
             }
 
             // Check children
             let children = obj.children.objects
             if !children.isEmpty {
-                print("\(indent)   Children: \(children.count)")
+                print("\(indent)   children: \(children.count)")
                 for child in children {
                     objectQueue.append((child, level + 1))
                 }
@@ -112,7 +111,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             objectIndex += 1
         }
 
-        print("🔍 Animation inspection complete\n")
+        print("animation inspection complete\n")
     }
     var modelScale: Float = 1.0
     var modelCenter: SIMD3<Float> = SIMD3<Float>(0, 0, 0)
@@ -168,7 +167,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
                                                 length: quadIndices.count * MemoryLayout<UInt16>.size,
                                                 options: [])
 
-        NSLog("✅ Test quad created for debug rendering")
+        NSLog("test quad created")
     }
 
     func createDefaultTexture() {
@@ -180,7 +179,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         descriptor.usage = [.shaderRead]
 
         guard let whiteTexture = device.makeTexture(descriptor: descriptor) else {
-            print("⚠️ Failed to create default white texture")
+            print("failed to create default white texture")
             return
         }
 
@@ -192,11 +191,11 @@ class ModelRenderer: NSObject, MTKViewDelegate {
                             bytesPerRow: 4)
 
         defaultWhiteTexture = whiteTexture
-        NSLog("✅ Default white texture created")
+        NSLog("default white texture created")
 
         // Create a 1x1 black texture for emission fallback (no glow)
         guard let blackTexture = device.makeTexture(descriptor: descriptor) else {
-            print("⚠️ Failed to create default black texture")
+            print("failed to create default black texture")
             return
         }
 
@@ -208,11 +207,11 @@ class ModelRenderer: NSObject, MTKViewDelegate {
                             bytesPerRow: 4)
 
         defaultBlackTexture = blackTexture
-        NSLog("✅ Default black texture created")
+        NSLog("default black texture created")
 
         // Create a 1x1 normal map texture (pointing up: RGB 128,128,255 = normalized (0,0,1))
         guard let normalTexture = device.makeTexture(descriptor: descriptor) else {
-            print("⚠️ Failed to create default normal texture")
+            print("failed to create default normal texture")
             return
         }
 
@@ -223,7 +222,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
                              bytesPerRow: 4)
 
         defaultNormalTexture = normalTexture
-        NSLog("✅ Default normal texture created")
+        NSLog("default normal texture created")
     }
 
     func setupRenderPipeline(view: MTKView) {
@@ -241,11 +240,11 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         // Use mesh's vertex descriptor if available, otherwise use a default one
         if let meshVertexDescriptor = meshVertexDescriptor {
             pipelineDescriptor.vertexDescriptor = meshVertexDescriptor
-            NSLog("✅ Using vertex descriptor from USDZ model")
+            NSLog("using vertex descriptor from model")
         } else {
             // Fallback vertex descriptor - matches shader expectations:
             // VertexIn { float3 position [[attribute(0)]]; float3 normal [[attribute(1)]]; float2 texCoord [[attribute(2)]] }
-            NSLog("⚠️ Using fallback vertex descriptor (model didn't provide one)")
+            NSLog("using fallback vertex descriptor (model didn't provide one)")
 
             let vertexDescriptor = MTLVertexDescriptor()
 
@@ -298,16 +297,16 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     }
 
     func loadModel() {
-        NSLog("🔍 Starting model load...")
+        NSLog("loading model...")
 
         // Load the Poddy robot USDZ model
         guard let modelURL = Bundle.main.url(forResource: "Poddy_M1_-_Stylized_Floating_Robot_-_Posed", withExtension: "usdz") else {
-            NSLog("❌ ERROR: Could not find Poddy USDZ in bundle")
-            NSLog("   Bundle path: %@", Bundle.main.bundlePath)
+            NSLog("model not found in bundle")
+            NSLog("   bundle path: %@", Bundle.main.bundlePath)
             return
         }
 
-        NSLog("✅ Found model at: %@", modelURL.path)
+        NSLog("found model at: %@", modelURL.path)
 
         // Store USDZ file path for texture extraction
         self.modelURL = modelURL
@@ -319,14 +318,14 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         let asset = MDLAsset(url: modelURL, vertexDescriptor: nil, bufferAllocator: allocator)
 
         guard asset.count > 0 else {
-            NSLog("❌ ERROR: USDZ asset is empty (count: %d)", asset.count)
+            NSLog("asset is empty (count: %d)", asset.count)
             return
         }
 
-        NSLog("✅ Asset loaded with %d objects", asset.count)
+        NSLog("asset loaded with %d objects", asset.count)
 
-        // 🔍 INSPECT ANIMATIONS IN THE MODEL
-        print("\n🎭 Inspecting USDZ for animations and poses...")
+        // inspect animations in the model
+        print("\ninspecting USDZ for animations and poses...")
         inspectAnimations(asset: asset)
 
         // Get the first object and check if it's a mesh or contains meshes
@@ -338,7 +337,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         // Try direct cast first
         if let mdlMesh = rootObject as? MDLMesh {
             mesh = mdlMesh
-            print("✅ Root object is directly a mesh")
+            print("root object is a mesh")
         } else {
             // Search children recursively
             var queue: [MDLObject] = [rootObject]
@@ -347,7 +346,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
 
                 if let mdlMesh = current as? MDLMesh {
                     mesh = mdlMesh
-                    print("✅ Found mesh in hierarchy")
+                    print("found mesh in hierarchy")
                     break
                 }
 
@@ -361,18 +360,18 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         }
 
         guard let object = mesh else {
-            NSLog("❌ ERROR: Could not find any mesh in USDZ")
+            NSLog("no mesh found in USDZ")
             return
         }
 
-        NSLog("✅ Mesh extracted: %d vertices", object.vertexCount)
+        NSLog("mesh extracted: %d vertices", object.vertexCount)
 
         // Calculate bounding box from MDLMesh (before conversion)
         calculateBoundingBox(from: object)
 
         // Ensure the mesh has texture coordinates - add if missing
         if object.vertexAttributeData(forAttributeNamed: MDLVertexAttributeTextureCoordinate) == nil {
-            NSLog("⚠️ Adding default texture coordinates to mesh")
+            NSLog("adding default texture coordinates to mesh")
 
             // Create texture coordinate data (simple planar mapping)
             let vertexCount = object.vertexCount
@@ -401,13 +400,13 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             // The USDZ model should provide: position (float3), normal (float3), texCoord (float2)
             meshVertexDescriptor = MTKMetalVertexDescriptorFromModelIO(metalKitMesh.vertexDescriptor)
 
-            NSLog("✅ Vertex descriptor from model:")
+            NSLog("vertex descriptor from model:")
             if let vd = meshVertexDescriptor {
                 for i in 0..<3 {
                     if let attr = vd.attributes[i] {
-                        NSLog("   Attribute %d: format=%lu, offset=%lu, bufferIndex=%lu", i, attr.format.rawValue, attr.offset, attr.bufferIndex)
+                        NSLog("   attribute %d: format=%lu, offset=%lu, bufferIndex=%lu", i, attr.format.rawValue, attr.offset, attr.bufferIndex)
                     } else {
-                        NSLog("   Attribute %d: not present", i)
+                        NSLog("   attribute %d: not present", i)
                     }
                 }
             }
@@ -415,9 +414,9 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             // Get vertex and index buffers from the first submesh
             guard !metalKitMesh.vertexBuffers.isEmpty,
                   let submesh = metalKitMesh.submeshes.first else {
-                NSLog("❌ ERROR: Mesh has no vertex buffers or submeshes")
-                NSLog("   Vertex buffers: %d", metalKitMesh.vertexBuffers.count)
-                NSLog("   Submeshes: %d", metalKitMesh.submeshes.count)
+                NSLog("mesh has no vertex buffers or submeshes")
+                NSLog("   vertex buffers: %d", metalKitMesh.vertexBuffers.count)
+                NSLog("   submeshes: %d", metalKitMesh.submeshes.count)
                 return
             }
 
@@ -429,23 +428,23 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             indexCount = submesh.indexCount
             indexType = submesh.indexType
 
-            NSLog("   - Vertex buffers count: %d", vertexBuffers.count)
+            NSLog("   vertex buffers count: %d", vertexBuffers.count)
 
             // Try to load texture from the mesh material
             loadTexture(from: object)
 
-            NSLog("✅ SUCCESS: Model loaded!")
-            NSLog("   - Index count: %d", indexCount)
-            NSLog("   - Index type: %@", String(describing: indexType))
+            NSLog("model loaded")
+            NSLog("   index count: %d", indexCount)
+            NSLog("   index type: %@", String(describing: indexType))
             let totalVertexBufferSize = vertexBuffers.reduce(0) { $0 + $1.length }
-            NSLog("   - Total vertex buffer size: %d bytes", totalVertexBufferSize)
-            NSLog("   - Index buffer size: %d bytes", indexBuffer?.length ?? 0)
-            NSLog("   - Bounding box min: (%f, %f, %f)", modelBoundingBoxMin.x, modelBoundingBoxMin.y, modelBoundingBoxMin.z)
-            NSLog("   - Bounding box max: (%f, %f, %f)", modelBoundingBoxMax.x, modelBoundingBoxMax.y, modelBoundingBoxMax.z)
-            NSLog("   - Model center: (%f, %f, %f)", modelCenter.x, modelCenter.y, modelCenter.z)
-            NSLog("   - Model scale: %f", modelScale)
+            NSLog("   total vertex buffer size: %d bytes", totalVertexBufferSize)
+            NSLog("   index buffer size: %d bytes", indexBuffer?.length ?? 0)
+            NSLog("   bounding box min: (%f, %f, %f)", modelBoundingBoxMin.x, modelBoundingBoxMin.y, modelBoundingBoxMin.z)
+            NSLog("   bounding box max: (%f, %f, %f)", modelBoundingBoxMax.x, modelBoundingBoxMax.y, modelBoundingBoxMax.z)
+            NSLog("   model center: (%f, %f, %f)", modelCenter.x, modelCenter.y, modelCenter.z)
+            NSLog("   model scale: %f", modelScale)
         } catch {
-            NSLog("❌ ERROR: Could not convert mesh to Metal: %@", error.localizedDescription)
+            NSLog("could not convert mesh to Metal: %@", error.localizedDescription)
         }
     }
 
@@ -466,7 +465,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         } else {
             // Fallback: iterate through vertices
             guard let vertexBuffer = mesh.vertexAttributeData(forAttributeNamed: MDLVertexAttributePosition) else {
-                NSLog("⚠️ WARNING: Cannot calculate bounding box - missing vertex position data")
+                NSLog("cannot calculate bounding box, missing vertex position data")
                 return
             }
 
@@ -503,17 +502,17 @@ class ModelRenderer: NSObject, MTKViewDelegate {
     }
 
     func loadTexture(from mesh: MDLMesh) {
-        NSLog("🎨 Attempting to load textures from mesh...")
+        NSLog("loading textures from mesh...")
 
         // Check if mesh has submeshes with materials
         guard let submeshes = mesh.submeshes as? [MDLSubmesh],
               let firstSubmesh = submeshes.first,
               let material = firstSubmesh.material else {
-            NSLog("⚠️ No material found in mesh")
+            NSLog("no material found in mesh")
             return
         }
 
-        NSLog("✅ Found material: %@", material.name)
+        NSLog("found material: %@", material.name)
 
         // Extract ALL PBR textures using the unified extraction method
         extractMaterialTexture(from: material, semantic: .baseColor, name: "base color") { texture in
@@ -552,11 +551,11 @@ class ModelRenderer: NSObject, MTKViewDelegate {
 
     func extractMaterialTexture(from material: MDLMaterial, semantic: MDLMaterialSemantic, name: String, completion: (MTLTexture) -> Void) {
         guard let property = material.property(with: semantic) else {
-            NSLog("   ⚠️ No %@ property found", name)
+            NSLog("   no %@ property found", name)
             return
         }
 
-        NSLog("   🎨 Found %@ property, type: %ld", name, property.type.rawValue)
+        NSLog("   found %@ property, type: %ld", name, property.type.rawValue)
 
         if let stringValue = property.stringValue,
            let usdzURL = modelURL,
@@ -564,17 +563,17 @@ class ModelRenderer: NSObject, MTKViewDelegate {
            let bracketEnd = stringValue.firstIndex(of: "]") {
 
             let texturePathInZip = String(stringValue[stringValue.index(after: bracketStart)..<bracketEnd])
-            NSLog("   📦 Extracting %@ texture: %@", name, texturePathInZip)
+            NSLog("   extracting %@ texture: %@", name, texturePathInZip)
 
             if let texture = extractTextureFromUSDZ(usdzPath: usdzURL, texturePath: texturePathInZip) {
                 completion(texture)
-                NSLog("✅ %@ texture loaded!", name.capitalized)
+                NSLog("%@ texture loaded", name)
             }
         }
     }
 
     func extractTextureFromUSDZ(usdzPath: URL, texturePath: String) -> MTLTexture? {
-        NSLog("   🔓 Extracting texture from USDZ: %@", texturePath)
+        NSLog("   extracting texture from USDZ: %@", texturePath)
 
         // 1. Create temporary directory
         let tempDir = FileManager.default.temporaryDirectory
@@ -583,7 +582,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         do {
             // Create temp directory
             try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-            NSLog("   📁 Created temp directory: %@", tempDir.path)
+            NSLog("   temp directory: %@", tempDir.path)
 
             // 2. Unzip USDZ (it's a ZIP archive) - extract specific texture file
             let process = Process()
@@ -600,25 +599,25 @@ class ModelRenderer: NSObject, MTKViewDelegate {
 
             if process.terminationStatus != 0 {
                 let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                let errorOutput = String(data: errorData, encoding: .utf8) ?? "Unknown error"
-                NSLog("   ❌ Unzip failed with status %d: %@", process.terminationStatus, errorOutput)
+                let errorOutput = String(data: errorData, encoding: .utf8) ?? "unknown error"
+                NSLog("   unzip failed with status %d: %@", process.terminationStatus, errorOutput)
                 try? FileManager.default.removeItem(at: tempDir)
                 return nil
             }
 
-            NSLog("   ✅ Unzip successful")
+            NSLog("   unzip successful")
 
             // 4. Load extracted texture
             let extractedTexturePath = tempDir.appendingPathComponent(texturePath)
 
             // Verify file exists
             guard FileManager.default.fileExists(atPath: extractedTexturePath.path) else {
-                NSLog("   ❌ Extracted texture not found at: %@", extractedTexturePath.path)
+                NSLog("   extracted texture not found at: %@", extractedTexturePath.path)
                 try? FileManager.default.removeItem(at: tempDir)
                 return nil
             }
 
-            NSLog("   📄 Found extracted texture at: %@", extractedTexturePath.path)
+            NSLog("   extracted texture at: %@", extractedTexturePath.path)
 
             let textureLoader = MTKTextureLoader(device: device)
             let options: [MTKTextureLoader.Option: Any] = [
@@ -628,17 +627,17 @@ class ModelRenderer: NSObject, MTKViewDelegate {
 
             let texture = try textureLoader.newTexture(URL: extractedTexturePath, options: options)
 
-            NSLog("   ✅ Texture loaded: %lu x %lu", texture.width, texture.height)
-            NSLog("   Texture pixel format: %lu", texture.pixelFormat.rawValue)
+            NSLog("   texture loaded: %lu x %lu", texture.width, texture.height)
+            NSLog("   texture pixel format: %lu", texture.pixelFormat.rawValue)
 
             // 5. Clean up temporary directory
             try FileManager.default.removeItem(at: tempDir)
-            NSLog("   🗑️ Cleaned up temp directory")
+            NSLog("   cleaned up temp directory")
 
             return texture
 
         } catch {
-            NSLog("   ❌ Error extracting texture: %@", error.localizedDescription)
+            NSLog("   error extracting texture: %@", error.localizedDescription)
             try? FileManager.default.removeItem(at: tempDir)
             return nil
         }
@@ -672,7 +671,7 @@ class ModelRenderer: NSObject, MTKViewDelegate {
             // Pulse between 1.5 and 3.0 while speaking
             let newIntensity = 2.25 + sin(time * 6.0) * 0.75
             if abs(glowIntensity - newIntensity) > 0.5 {
-                print("🔥 Speaking - pulsing glow: \(newIntensity)")
+                print("speaking - pulsing glow: \(newIntensity)")
             }
             glowIntensity = newIntensity
         } else {
@@ -688,11 +687,11 @@ class ModelRenderer: NSObject, MTKViewDelegate {
         // Safety check: ensure aspect ratio is valid
         if aspectRatio <= 0 || !aspectRatio.isFinite {
             aspectRatio = 1.0
-            NSLog("⚠️ WARNING: Invalid aspect ratio, defaulting to 1.0")
+            NSLog("invalid aspect ratio, using 1.0")
         }
 
         if view.bounds.width <= 0 || view.bounds.height <= 0 {
-            NSLog("⚠️ WARNING: Invalid view bounds: width=%f, height=%f", view.bounds.width, view.bounds.height)
+            NSLog("invalid view bounds: width=%f, height=%f", view.bounds.width, view.bounds.height)
         }
 
         // Calculate camera distance based on model size
@@ -782,13 +781,13 @@ class ModelRenderer: NSObject, MTKViewDelegate {
               let drawable = view.currentDrawable,
               let testQuadVertexBuffer = testQuadVertexBuffer,
               let testQuadIndexBuffer = testQuadIndexBuffer else {
-            NSLog("⚠️ WARNING: Cannot render test quad - missing resources")
+            NSLog("cannot render test quad - missing resources")
             return
         }
 
         guard let commandBuffer = commandQueue.makeCommandBuffer(),
               let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: descriptor) else {
-            NSLog("⚠️ WARNING: Cannot create command buffer/encoder for test quad")
+            NSLog("cannot create command buffer/encoder for test quad")
             return
         }
 

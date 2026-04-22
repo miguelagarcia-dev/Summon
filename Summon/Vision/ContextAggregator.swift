@@ -45,7 +45,7 @@ class ContextAggregator {
             snapshots.removeFirst()
         }
         
-        print("📊 Context: \(windowContext.appName) - \(text.prefix(50))...")
+        print("context: \(windowContext.appName) - \(text.prefix(50))...")
     }
     
     // Build context summary for AI
