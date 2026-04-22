@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 
+// State machine: idle -> listening -> thinking -> speaking -> idle
 enum CompanionState {
     case idle
     case listening
@@ -274,7 +275,7 @@ class VoiceCompanionCoordinator {
     // MARK: - Activity Monitoring
     
     private func startActivityMonitoring() {
-        // Check for activity triggers every 30 seconds
+        // 30s poll: frequent enough to catch context shifts, cheap on CPU
         contextMonitoringTask = Task { [weak self] in
             while !Task.isCancelled {
                 // Wait 30 seconds
