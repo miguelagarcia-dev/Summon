@@ -91,4 +91,5 @@ iOSInjectionProject/
 
 # API Keys and Secrets
 Config.swift
+Summon/Config.swift
 
