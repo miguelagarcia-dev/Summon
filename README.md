@@ -1,4 +1,4 @@
-# Summon
+# [Summon](https://devpost.com/software/summon)
 
 A voice-activated AI companion that lives on your screen as a 3D animated character. Built in 36 hours at HackPrinceton 2025.
 
