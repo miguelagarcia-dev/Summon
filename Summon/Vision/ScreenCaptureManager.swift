@@ -20,7 +20,8 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
     
     // Frame processing control
     private var frameCounter: UInt64 = 0
-    private let processEveryNthFrame: UInt64 = 5  // Process 1 out of 5 frames (0.4 FPS for OCR)
+    // Skip 4 of every 5 frames — OCR is expensive, 0.4 FPS is plenty for context
+    private let processEveryNthFrame: UInt64 = 5
     
     // Callbacks
     var onFrameCaptured: ((CGImage) -> Void)?
@@ -79,11 +80,11 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
         // Configure stream for efficiency
         let config = SCStreamConfiguration()
         
-        // Lower resolution = faster OCR, less memory
+        // 1280x720 balances OCR accuracy against memory and CPU cost
         config.width = 1280
         config.height = 720
         
-        // 2 FPS capture rate
+        // 2 FPS is the lowest useful rate for detecting app/content changes
         config.minimumFrameInterval = CMTime(value: 1, timescale: 2)
         
         // Smaller queue depth for lower latency

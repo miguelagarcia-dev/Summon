@@ -15,6 +15,7 @@ struct ContextSnapshot {
 }
 
 class ContextAggregator {
+    // Rolling buffer: 20 snapshots keeps ~10s of history without unbounded memory growth
     private var snapshots: [ContextSnapshot] = []
     private let maxSnapshots = 20
     private let ocrProcessor = OCRProcessor()
@@ -83,7 +84,7 @@ class ContextAggregator {
         return summary
     }
     
-    // Build detailed context for triggers
+    // async to allow future enrichment (e.g. network lookups, ML inference)
     func buildDetailedContext() async -> String {
         return buildContextSummary()
     }

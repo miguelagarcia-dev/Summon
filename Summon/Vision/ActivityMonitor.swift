@@ -32,7 +32,8 @@ class ActivityMonitor {
     private var lastApp: String?
     private var lastCommentaryTime: Date?
     private var lastTriggerType: String?
-    private let commentaryCooldown: TimeInterval = 600.0  // 10 min between comments (longer is better!)
+    // 600s gap prevents the companion from feeling intrusive or repetitive
+    private let commentaryCooldown: TimeInterval = 600.0
     
     // Track engagement for learning
     private var engagementCount = 0
@@ -69,7 +70,7 @@ class ActivityMonitor {
         
         let sessionDuration = Date().timeIntervalSince(appSessionStart[currentApp]!)
         
-        // Long session trigger (20+ minutes)
+        // 1200s (20 min): enough time to warrant a check-in without being premature
         if sessionDuration > 1200 {
             let isStable = await aggregator.isContextStable()
             if isStable {
@@ -77,7 +78,7 @@ class ActivityMonitor {
             }
         }
         
-        // Focused work trigger (40+ minutes)
+        // 2400s (40 min): deep work threshold — user likely needs a nudge by now
         if sessionDuration > 2400 {
             let isStable = await aggregator.isContextStable(timeWindow: 60.0)
             if isStable {
@@ -107,7 +108,7 @@ class ActivityMonitor {
     
     // Check if app switch is significant
     private func isSignificantSwitch(from: String, to: String) -> Bool {
-        // Filter out noise (system apps, notifications)
+        // System apps are transient; commenting on them would feel random and annoying
         let systemApps = ["Finder", "System Preferences", "Spotlight", "Notification Center"]
         if systemApps.contains(from) || systemApps.contains(to) {
             return false

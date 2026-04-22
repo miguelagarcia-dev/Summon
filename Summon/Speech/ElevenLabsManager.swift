@@ -30,7 +30,7 @@ class ElevenLabsManager {
     private let voiceID: String
     private let baseURL = "https://api.elevenlabs.io/v1/text-to-speech"
     
-    // Simple cache to avoid duplicate API calls
+    // Cache repeated phrases (greetings, ack sounds) to avoid redundant API calls
     private var audioCache: [String: Data] = [:]
     
     init(apiKey: String, voiceID: String) {
@@ -88,7 +88,7 @@ class ElevenLabsManager {
             // Cache the audio data
             audioCache[text] = data
             
-            // Limit cache size to 20 entries
+            // Cap at 20 entries to bound memory; evict oldest (FIFO approximation)
             if audioCache.count > 20 {
                 audioCache.removeValue(forKey: audioCache.keys.first!)
             }
